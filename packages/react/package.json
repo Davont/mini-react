@@ -1,0 +1,12 @@
+{
+	"name": "react",
+	"version": "1.0.0",
+	"description": "react 公共方法",
+	"module": "index.ts",
+	"keywords": [],
+	"author": "",
+	"dependencies": {
+		"shared": "workspace:*"
+	},
+	"license": "ISC"
+}
