@@ -1,6 +1,7 @@
 import { Props, Key } from 'shared/ReactTypes';
 import { WorkTag } from './workTags';
 import { Flags, NoFlags } from './fiberFlags';
+import { Container } from 'hostConfig';
 
 export class FiberNode {
 	tag: WorkTag;
@@ -14,8 +15,11 @@ export class FiberNode {
 	index: number;
 	ref: FiberNode | null;
 	memoizedProps: Props | null;
+	memoizedState: any;
 	alternate: FiberNode | null;
 	flags: Flags;
+	updateQueue: unknown;
+
 	constructor(tag: WorkTag, pendingProps: Props, key: Key) {
 		// 实例属性
 		this.tag = tag;
@@ -44,13 +48,49 @@ export class FiberNode {
 		this.ref = null;
 
 		// 作为工作单位
-		// 刚开始准备工作时候，这个 props 是什么
-		this.pendingProps = pendingProps;
-
-		// 工作完之后，这个 props 是什么
-		this.memoizedProps = null;
+		this.pendingProps = pendingProps; // 刚开始准备工作时候，这个 props 是什么
+		this.memoizedProps = null; // 工作完之后，这个 props 是什么
+		this.memoizedState = null;
+		this.updateQueue = null;
 
 		// 副作用
 		this.flags = NoFlags;
+
+		this.alternate = null;
 	}
 }
+
+export class FiberRootNode {
+	container: Container;
+	current: FiberNode;
+	finishedWork: FiberNode | null;
+	constructor(container: Container, hostRootFiber: FiberNode) {
+		this.container = container;
+		this.current = hostRootFiber;
+		hostRootFiber.stateNode = this;
+		this.finishedWork = null;
+	}
+}
+
+export const createWorkInProgress = (
+	current: FiberNode,
+	pendingProps: Props
+): FiberNode => {
+	let wip = current.alternate;
+	if (wip === null) {
+		// mount 首屏渲染时候
+		wip = new FiberNode(current.tag, pendingProps, current.key);
+		wip.stateNode = current.stateNode;
+
+		wip.alternate = current;
+		current.alternate = wip;
+	} else {
+		// update
+		wip.pendingProps = pendingProps;
+		wip.flags = NoFlags;
+	}
+	wip.type = current.type;
+	wip.updateQueue = current.updateQueue;
+	wip.child = current.child;
+	return wip;
+};

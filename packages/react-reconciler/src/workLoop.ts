@@ -1,15 +1,38 @@
 import { beginWork } from './beginWork';
 import { completeWork } from './completeWork';
-import { FiberNode } from './fiber';
+import { FiberNode, FiberRootNode } from './fiber';
+import { HostRoot } from './workTags';
 
 let workInProgress: FiberNode | null = null;
 
-// 让我们当前workInProgress 指向第一个fiberNode
-function prepareFeshStack(fiber: FiberNode) {
-	workInProgress = fiber;
+// 让我们当前workInProgress 指向第一个fiberNode,这个fiber不是普通的fiber，其实是root
+function prepareFeshStack(root: FiberRootNode) {
+	// 它不是普通的fiber，不能直接拿来当 workInProgress，所以我们需要一个方法，用来创建我们的 workInProgress
+	// workInProgress = fiber;
 }
 
-function renderRoot(root: FiberNode) {
+// container 与 renderRoot 更新流程连接上
+export function scheduleUpdateOnFiber(fiber: FiberNode) {
+	// TODO 调度功能
+	// fiberRootNode
+	const root = markUpdateFromFiberToRoot(fiber);
+	renderRoot(root);
+}
+
+function markUpdateFromFiberToRoot(fiber: FiberNode) {
+	let node = fiber;
+	let parent = node.return;
+	while (parent !== null) {
+		node = parent;
+		parent = node.return;
+	}
+	if (node.tag === HostRoot) {
+		return node.stateNode;
+	}
+	return null;
+}
+
+function renderRoot(root: FiberRootNode) {
 	// 初始化
 	prepareFeshStack(root);
 	// 初始化之后开始递归循环
