@@ -1,2 +1,2 @@
 # mini-react
-not big react
+or big react
