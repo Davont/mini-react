@@ -1,2 +1,3 @@
 # mini-react
-or big react
+big react
+
